@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+import pytest
 from homeassistant.components.climate.const import HVACMode
 from homeassistant.helpers.update_coordinator import UpdateFailed
-import pytest
 
 from custom_components.climate_control.const import (
     CONF_COMFORT_COOL,

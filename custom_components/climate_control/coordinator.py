@@ -148,7 +148,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         solar_state: SolarState,
         minutes_away: float | None,
     ) -> tuple[float, float, HVACMode, ScheduleMode, str]:
-        """Apply the full setpoint algorithm; return (heat, cool, hvac_mode, effective_mode, reason)."""
+        """Compute setpoints; return (heat, cool, hvac_mode, effective_mode, reason)."""
         comfort_heat = self._get_option(CONF_COMFORT_HEAT, DEFAULT_COMFORT_HEAT)
         comfort_cool = self._get_option(CONF_COMFORT_COOL, DEFAULT_COMFORT_COOL)
         eco_heat     = self._get_option(CONF_ECO_HEAT, DEFAULT_ECO_HEAT)

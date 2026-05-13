@@ -7,7 +7,9 @@
       "Bash(pip install *)",
       "Bash(python -c \"import homeassistant; print\\(homeassistant.__version__\\)\")",
       "PowerShell(python -c \"import homeassistant; print\\(homeassistant.__version__\\)\" 2>&1)",
-      "PowerShell(python -c \"import homeassistant; print\\(homeassistant.__version__\\)\")"
+      "PowerShell(python -c \"import homeassistant; print\\(homeassistant.__version__\\)\")",
+      "Bash(ruff check *)",
+      "Bash(python -m ruff check --fix custom_components/ tests/)"
     ]
   }
 }

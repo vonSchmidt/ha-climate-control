@@ -1,9 +1,9 @@
 """Config flow integration tests for Climate Control."""
 from __future__ import annotations
 
+import pytest
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
-import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.climate_control.const import (

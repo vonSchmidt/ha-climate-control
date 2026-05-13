@@ -1,7 +1,7 @@
 """Tests for custom_components.climate_control.solar (SolarAdvisor)."""
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from unittest.mock import MagicMock
 
 import pytest
