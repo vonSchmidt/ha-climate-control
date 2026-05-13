@@ -1,15 +1,17 @@
 """Tests for custom_components.climate_control.solar (SolarAdvisor)."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock
 
 import pytest
 
-from custom_components.climate_control.solar import SolarAdvisor, SolarState
+from custom_components.climate_control.solar import SolarAdvisor
 
 
-def _advisor(hass: MagicMock, power_sensor: str | None = None, weather_entity: str | None = None) -> SolarAdvisor:
+def _advisor(
+    hass: MagicMock, power_sensor: str | None = None, weather_entity: str | None = None
+) -> SolarAdvisor:
     return SolarAdvisor(hass, power_sensor, weather_entity)
 
 
@@ -67,7 +69,7 @@ class TestForecastLookahead:
         return _state("cloudy", {"forecast": slots})
 
     def test_lookahead_sunny_when_condition_within_window(self, mock_hass: MagicMock) -> None:
-        soon = datetime.now(timezone.utc) + timedelta(hours=1)
+        soon = datetime.now(UTC) + timedelta(hours=1)
         mock_hass.states.get.return_value = self._weather(
             [{"datetime": soon.isoformat(), "condition": "sunny"}]
         )
@@ -75,7 +77,7 @@ class TestForecastLookahead:
         assert result.lookahead_sunny is True
 
     def test_lookahead_false_when_condition_unsunny(self, mock_hass: MagicMock) -> None:
-        soon = datetime.now(timezone.utc) + timedelta(hours=1)
+        soon = datetime.now(UTC) + timedelta(hours=1)
         mock_hass.states.get.return_value = self._weather(
             [{"datetime": soon.isoformat(), "condition": "rainy"}]
         )
@@ -83,7 +85,7 @@ class TestForecastLookahead:
         assert result.lookahead_sunny is False
 
     def test_lookahead_false_when_slot_beyond_window(self, mock_hass: MagicMock) -> None:
-        far = datetime.now(timezone.utc) + timedelta(hours=5)
+        far = datetime.now(UTC) + timedelta(hours=5)
         mock_hass.states.get.return_value = self._weather(
             [{"datetime": far.isoformat(), "condition": "sunny"}]
         )
@@ -91,7 +93,7 @@ class TestForecastLookahead:
         assert result.lookahead_sunny is False
 
     def test_lookahead_false_when_slot_in_past(self, mock_hass: MagicMock) -> None:
-        past = datetime.now(timezone.utc) - timedelta(hours=1)
+        past = datetime.now(UTC) - timedelta(hours=1)
         mock_hass.states.get.return_value = self._weather(
             [{"datetime": past.isoformat(), "condition": "sunny"}]
         )
@@ -127,5 +129,7 @@ class TestSourceNote:
             return _state("sunny", {"forecast": []})
 
         mock_hass.states.get.side_effect = side_effect
-        result = _advisor(mock_hass, power_sensor="sensor.inv", weather_entity="weather.home").evaluate()
+        result = _advisor(
+            mock_hass, power_sensor="sensor.inv", weather_entity="weather.home"
+        ).evaluate()
         assert result.source_note == "inverter+forecast"

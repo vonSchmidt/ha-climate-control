@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from homeassistant.core import HomeAssistant
 
@@ -110,7 +110,7 @@ class SolarAdvisor:
             return False
 
         forecast: list[dict] = state.attributes.get("forecast", [])
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         for slot in forecast:
             raw_dt = slot.get("datetime")
@@ -122,11 +122,13 @@ class SolarAdvisor:
                 continue
 
             if slot_dt.tzinfo is None:
-                slot_dt = slot_dt.replace(tzinfo=timezone.utc)
+                slot_dt = slot_dt.replace(tzinfo=UTC)
 
             hours_until = (slot_dt - now).total_seconds() / 3600
-            if 0 < hours_until <= SOLAR_LOOKAHEAD_HOURS:
-                if slot.get("condition") in SUNNY_CONDITIONS:
-                    return True
+            if (
+                0 < hours_until <= SOLAR_LOOKAHEAD_HOURS
+                and slot.get("condition") in SUNNY_CONDITIONS
+            ):
+                return True
 
         return False

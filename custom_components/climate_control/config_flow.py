@@ -112,8 +112,12 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
                         multiple=True,
                     )
                 ),
-                vol.Required(CONF_PRECONDITION_MIN, default=DEFAULT_PRECONDITION): selector.NumberSelector(
-                    selector.NumberSelectorConfig(min=0, max=120, step=1, mode=selector.NumberSelectorMode.BOX)
+                vol.Required(
+                    CONF_PRECONDITION_MIN, default=DEFAULT_PRECONDITION
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0, max=120, step=1, mode=selector.NumberSelectorMode.BOX
+                    )
                 ),
             }
         )
@@ -145,8 +149,12 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_WEATHER_ENTITY): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="weather")
                 ),
-                vol.Required(CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): selector.NumberSelector(
-                    selector.NumberSelectorConfig(min=5, max=60, step=1, mode=selector.NumberSelectorMode.BOX)
+                vol.Required(
+                    CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=5, max=60, step=1, mode=selector.NumberSelectorMode.BOX
+                    )
                 ),
             }
         )
@@ -207,16 +215,26 @@ class ClimateControlOptionsFlow(OptionsFlow):
                 CONF_PRECONDITION_MIN,
                 default=current.get(CONF_PRECONDITION_MIN, DEFAULT_PRECONDITION),
             ): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=0, max=120, step=1, mode=selector.NumberSelectorMode.BOX)
+                selector.NumberSelectorConfig(
+                    min=0, max=120, step=1, mode=selector.NumberSelectorMode.BOX
+                )
             ),
         }
 
         # Setpoints + solar fields
         settings_schema = {
-            vol.Required(CONF_COMFORT_HEAT, default=current.get(CONF_COMFORT_HEAT, DEFAULT_COMFORT_HEAT)): vol.Coerce(float),
-            vol.Required(CONF_COMFORT_COOL, default=current.get(CONF_COMFORT_COOL, DEFAULT_COMFORT_COOL)): vol.Coerce(float),
-            vol.Required(CONF_ECO_HEAT, default=current.get(CONF_ECO_HEAT, DEFAULT_ECO_HEAT)): vol.Coerce(float),
-            vol.Required(CONF_ECO_COOL, default=current.get(CONF_ECO_COOL, DEFAULT_ECO_COOL)): vol.Coerce(float),
+            vol.Required(
+                CONF_COMFORT_HEAT, default=current.get(CONF_COMFORT_HEAT, DEFAULT_COMFORT_HEAT)
+            ): vol.Coerce(float),
+            vol.Required(
+                CONF_COMFORT_COOL, default=current.get(CONF_COMFORT_COOL, DEFAULT_COMFORT_COOL)
+            ): vol.Coerce(float),
+            vol.Required(
+                CONF_ECO_HEAT, default=current.get(CONF_ECO_HEAT, DEFAULT_ECO_HEAT)
+            ): vol.Coerce(float),
+            vol.Required(
+                CONF_ECO_COOL, default=current.get(CONF_ECO_COOL, DEFAULT_ECO_COOL)
+            ): vol.Coerce(float),
             vol.Optional(CONF_SOLAR_POWER_SENSOR): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="sensor")
             ),
@@ -227,7 +245,9 @@ class ClimateControlOptionsFlow(OptionsFlow):
                 CONF_UPDATE_INTERVAL,
                 default=current.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
             ): selector.NumberSelector(
-                selector.NumberSelectorConfig(min=5, max=60, step=1, mode=selector.NumberSelectorMode.BOX)
+                selector.NumberSelectorConfig(
+                    min=5, max=60, step=1, mode=selector.NumberSelectorMode.BOX
+                )
             ),
         }
 

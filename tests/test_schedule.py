@@ -3,12 +3,12 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from custom_components.climate_control.schedule import ScheduleEvaluator, ScheduleMode
 
 
-def _make_evaluator(hass: MagicMock, comfort_state: str | None, eco_state: str | None) -> ScheduleEvaluator:
+def _make_evaluator(
+    hass: MagicMock, comfort_state: str | None, eco_state: str | None
+) -> ScheduleEvaluator:
     """Build a ScheduleEvaluator whose hass.states.get returns controlled values."""
     def get_state(entity_id: str) -> MagicMock | None:
         raw = comfort_state if "comfort" in entity_id else eco_state

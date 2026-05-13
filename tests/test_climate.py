@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-import pytest
 from homeassistant.components.climate.const import HVACMode
+import pytest
 
 from custom_components.climate_control.climate import ClimateControlEntity
 from custom_components.climate_control.coordinator import CoordinatorData
@@ -34,11 +34,15 @@ class TestProperties:
         entity, _ = _make_entity(coordinator_data)
         assert entity.hvac_mode == HVACMode.HEAT_COOL
 
-    def test_target_temperature_low_matches_heat_setpoint(self, coordinator_data: CoordinatorData) -> None:
+    def test_target_temperature_low_matches_heat_setpoint(
+        self, coordinator_data: CoordinatorData
+    ) -> None:
         entity, _ = _make_entity(coordinator_data)
         assert entity.target_temperature_low == pytest.approx(21.0)
 
-    def test_target_temperature_high_matches_cool_setpoint(self, coordinator_data: CoordinatorData) -> None:
+    def test_target_temperature_high_matches_cool_setpoint(
+        self, coordinator_data: CoordinatorData
+    ) -> None:
         entity, _ = _make_entity(coordinator_data)
         assert entity.target_temperature_high == pytest.approx(24.0)
 

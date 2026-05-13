@@ -199,10 +199,16 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         if solar_state.solar_enabled:
             if solar_state.current_output_w > SOLAR_HIGH_W_THRESHOLD:
                 solar_offset = SOLAR_OFFSET_HIGH
-                reason += f" | High inverter output ({solar_state.current_output_w:.0f} W) → pre-cool -{SOLAR_OFFSET_HIGH}°C"
+                reason += (
+                    f" | High inverter output ({solar_state.current_output_w:.0f} W)"
+                    f" → pre-cool -{SOLAR_OFFSET_HIGH}°C"
+                )
             elif solar_state.current_output_w > SOLAR_LOW_W_THRESHOLD:
                 solar_offset = SOLAR_OFFSET_LOW
-                reason += f" | Moderate inverter output ({solar_state.current_output_w:.0f} W) → pre-cool -{SOLAR_OFFSET_LOW}°C"
+                reason += (
+                    f" | Moderate inverter output ({solar_state.current_output_w:.0f} W)"
+                    f" → pre-cool -{SOLAR_OFFSET_LOW}°C"
+                )
             elif solar_state.lookahead_sunny:
                 solar_offset = SOLAR_OFFSET_LOW
                 reason += f" | Sunny forecast incoming → pre-cool -{SOLAR_OFFSET_LOW}°C"

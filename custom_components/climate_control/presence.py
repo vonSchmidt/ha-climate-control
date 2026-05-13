@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 
 from homeassistant.core import HomeAssistant
@@ -49,7 +49,7 @@ class PresenceEvaluator:
             return PresenceState.UNKNOWN
 
         if any(s.state == "on" for s in valid_states):
-            self._last_seen = datetime.now(timezone.utc)
+            self._last_seen = datetime.now(UTC)
             return PresenceState.HOME
 
         return PresenceState.AWAY
@@ -61,5 +61,5 @@ class PresenceEvaluator:
         """
         if self._last_seen is None:
             return None
-        delta = datetime.now(timezone.utc) - self._last_seen
+        delta = datetime.now(UTC) - self._last_seen
         return delta.total_seconds() / 60
