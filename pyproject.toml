@@ -9,7 +9,7 @@ description = "Home Assistant custom integration for solar-aware, presence-drive
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
-authors = [{ name = "Solene", email = "" }]
+authors = [{ name = "Solene" }]
 keywords = ["home-assistant", "climate", "hvac", "solar", "smart-home"]
 classifiers = [
     "Development Status :: 3 - Alpha",
