@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pytest tests/test_solar.py tests/test_schedule.py tests/test_presence.py tests/test_coordinator.py tests/test_climate.py -v --tb=short)",
+      "Bash(dir /b)",
+      "Bash(pip show *)",
+      "Bash(pip install *)",
+      "Bash(python -c \"import homeassistant; print\\(homeassistant.__version__\\)\")",
+      "PowerShell(python -c \"import homeassistant; print\\(homeassistant.__version__\\)\" 2>&1)",
+      "PowerShell(python -c \"import homeassistant; print\\(homeassistant.__version__\\)\")"
+    ]
+  }
+}

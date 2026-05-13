@@ -1,120 +1,132 @@
-"""Solar irradiance and weather input layer for Climate Control."""
+"""Solar input layer for Climate Control — reads HA sensor.* and weather.* entities."""
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 
-import aiohttp
+from homeassistant.core import HomeAssistant
 
-from .const import (
-    OPEN_METEO_BASE_URL,
-    OPEN_METEO_FORECAST_DAYS,
-    OPEN_METEO_HOURLY_PARAMS,
-)
+from .const import SOLAR_LOOKAHEAD_HOURS, SUNNY_CONDITIONS
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class SolarData:
-    """Immutable snapshot of Open-Meteo hourly forecast data."""
+class SolarState:
+    """Snapshot of current solar conditions derived from HA entity states."""
 
-    hourly_times: list[datetime]
-    shortwave_radiation: list[float]   # W/m²
-    cloud_cover: list[float]           # %
-    outdoor_temp: list[float]          # °C
-    fetched_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    current_output_w: float   # 0.0 when inverter sensor absent or unavailable
+    lookahead_sunny:  bool    # True when a sunny forecast slot is within the look-ahead window
+    solar_enabled:    bool    # False when neither source is configured
+    source_note:      str     # human-readable description of active sources
 
 
-class SolarWeatherClient:
-    """Fetches solar irradiance and weather data from the Open-Meteo API.
+class SolarAdvisor:
+    """Evaluates solar conditions from HA entity state reads.
 
-    All public methods are pure functions given a ``SolarData`` snapshot so
-    they are straightforward to unit-test without network access.
+    All reads are synchronous ``hass.states.get()`` calls — no async I/O.
+    Both sources are optional; if neither is configured ``solar_enabled`` is
+    ``False`` and the coordinator applies no solar offset.
     """
 
     def __init__(
         self,
-        session: aiohttp.ClientSession,
-        latitude: float,
-        longitude: float,
+        hass: HomeAssistant,
+        power_sensor: str | None,
+        weather_entity: str | None,
     ) -> None:
-        self._session = session
-        self._latitude = latitude
-        self._longitude = longitude
+        self._hass = hass
+        self._power_sensor = power_sensor
+        self._weather_entity = weather_entity
 
-    # ── Network ───────────────────────────────────────────────────────────────
+    def evaluate(self) -> SolarState:
+        """Return a ``SolarState`` snapshot based on current HA entity states."""
+        if self._power_sensor is None and self._weather_entity is None:
+            return SolarState(
+                current_output_w=0.0,
+                lookahead_sunny=False,
+                solar_enabled=False,
+                source_note="disabled",
+            )
 
-    async def async_fetch(self) -> SolarData:
-        """Fetch the hourly forecast from Open-Meteo and return a ``SolarData``."""
-        params: dict[str, str | int] = {
-            "latitude": self._latitude,
-            "longitude": self._longitude,
-            "hourly": OPEN_METEO_HOURLY_PARAMS,
-            "forecast_days": OPEN_METEO_FORECAST_DAYS,
-            "timezone": "auto",
-        }
+        current_output_w = self._read_inverter()
+        lookahead_sunny  = self._read_forecast()
 
-        _LOGGER.debug("Fetching Open-Meteo forecast for (%s, %s)", self._latitude, self._longitude)
+        sources: list[str] = []
+        if self._power_sensor is not None:
+            sources.append("inverter")
+        if self._weather_entity is not None:
+            sources.append("forecast")
+        source_note = "+".join(sources)
 
-        async with self._session.get(OPEN_METEO_BASE_URL, params=params) as resp:
-            resp.raise_for_status()
-            raw: dict = await resp.json()
-
-        hourly = raw["hourly"]
-        times = [
-            datetime.fromisoformat(t).replace(tzinfo=timezone.utc)
-            for t in hourly["time"]
-        ]
-
-        return SolarData(
-            hourly_times=times,
-            shortwave_radiation=[float(v) for v in hourly["shortwave_radiation"]],
-            cloud_cover=[float(v) for v in hourly["cloud_cover"]],
-            outdoor_temp=[float(v) for v in hourly["temperature_2m"]],
+        return SolarState(
+            current_output_w=current_output_w,
+            lookahead_sunny=lookahead_sunny,
+            solar_enabled=True,
+            source_note=source_note,
         )
 
-    # ── Pure helpers ──────────────────────────────────────────────────────────
+    # ── Private helpers ───────────────────────────────────────────────────────
 
-    @staticmethod
-    def current_irradiance(data: SolarData) -> float:
-        """Return W/m² for the current UTC hour.
-
-        Falls back to 0.0 if the current hour is not present in the dataset.
-        """
-        now = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
-        try:
-            idx = data.hourly_times.index(now)
-        except ValueError:
-            _LOGGER.warning("Current hour %s not found in solar forecast; returning 0 W/m²", now)
+    def _read_inverter(self) -> float:
+        """Return current inverter output in W, or 0.0 on unavailability."""
+        if self._power_sensor is None:
             return 0.0
-        return data.shortwave_radiation[idx]
 
-    @staticmethod
-    def peak_irradiance_today(data: SolarData) -> tuple[float, datetime]:
-        """Return the (peak W/m², datetime) for today (UTC date).
+        state = self._hass.states.get(self._power_sensor)
+        if state is None or state.state in ("unavailable", "unknown"):
+            _LOGGER.warning(
+                "Solar power sensor %s unavailable; assuming 0 W", self._power_sensor
+            )
+            return 0.0
 
-        Returns (0.0, now) when no data is available for today.
-        """
-        today = datetime.now(timezone.utc).date()
-        todays_pairs = [
-            (rad, t)
-            for t, rad in zip(data.hourly_times, data.shortwave_radiation)
-            if t.date() == today
-        ]
-        if not todays_pairs:
-            return 0.0, datetime.now(timezone.utc)
-        peak_rad, peak_time = max(todays_pairs, key=lambda p: p[0])
-        return peak_rad, peak_time
+        try:
+            value = float(state.state)
+        except ValueError:
+            _LOGGER.warning(
+                "Solar power sensor %s has non-numeric state %r; assuming 0 W",
+                self._power_sensor,
+                state.state,
+            )
+            return 0.0
 
-    @staticmethod
-    def hours_until_peak(data: SolarData) -> float:
-        """Return fractional hours from now until today's peak irradiance hour.
+        unit = state.attributes.get("unit_of_measurement", "W")
+        if unit in ("kW", "kw"):
+            value *= 1000.0
 
-        Negative values indicate the peak has already passed.
-        """
-        _, peak_time = SolarWeatherClient.peak_irradiance_today(data)
+        return value
+
+    def _read_forecast(self) -> bool:
+        """Return True when a sunny condition is forecast within the look-ahead window."""
+        if self._weather_entity is None:
+            return False
+
+        state = self._hass.states.get(self._weather_entity)
+        if state is None or state.state in ("unavailable", "unknown"):
+            _LOGGER.warning(
+                "Weather entity %s unavailable; look-ahead disabled", self._weather_entity
+            )
+            return False
+
+        forecast: list[dict] = state.attributes.get("forecast", [])
         now = datetime.now(timezone.utc)
-        delta = peak_time - now
-        return delta.total_seconds() / 3600
+
+        for slot in forecast:
+            raw_dt = slot.get("datetime")
+            if raw_dt is None:
+                continue
+            try:
+                slot_dt = datetime.fromisoformat(str(raw_dt))
+            except ValueError:
+                continue
+
+            if slot_dt.tzinfo is None:
+                slot_dt = slot_dt.replace(tzinfo=timezone.utc)
+
+            hours_until = (slot_dt - now).total_seconds() / 3600
+            if 0 < hours_until <= SOLAR_LOOKAHEAD_HOURS:
+                if slot.get("condition") in SUNNY_CONDITIONS:
+                    return True
+
+        return False

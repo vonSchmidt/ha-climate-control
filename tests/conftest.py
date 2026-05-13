@@ -1,51 +1,77 @@
 """Shared pytest fixtures for Climate Control tests."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
+from homeassistant.components.climate.const import HVACMode
 
-from custom_components.climate_control.solar import SolarData
+from custom_components.climate_control.coordinator import CoordinatorData
+from custom_components.climate_control.presence import PresenceState
+from custom_components.climate_control.schedule import ScheduleMode
+from custom_components.climate_control.solar import SolarState
+
+
+def make_state(state_val: str, attributes: dict | None = None) -> MagicMock:
+    """Return a minimal HA state object mock."""
+    s = MagicMock()
+    s.state = state_val
+    s.attributes = attributes or {}
+    return s
 
 
 @pytest.fixture
 def mock_hass() -> MagicMock:
-    """Return a minimal Home Assistant mock."""
+    """Return a minimal Home Assistant mock with a configurable states store."""
     hass = MagicMock()
     hass.states = MagicMock()
-    hass.config.latitude  = 48.8566
-    hass.config.longitude = 2.3522
+    hass.states.get.return_value = None
     return hass
 
 
 @pytest.fixture
-def mock_aiohttp_session() -> AsyncMock:
-    """Return a mock aiohttp ClientSession."""
-    return AsyncMock()
+def sample_solar_state() -> SolarState:
+    """A solar state fixture with moderate inverter output, solar enabled."""
+    return SolarState(
+        current_output_w=500.0,
+        lookahead_sunny=False,
+        solar_enabled=True,
+        source_note="inverter",
+    )
 
 
 @pytest.fixture
-def sample_solar_data() -> SolarData:
-    """Return a deterministic SolarData fixture spanning 48 hours from 2026-05-13 00:00 UTC."""
-    base = datetime(2026, 5, 13, 0, 0, 0, tzinfo=timezone.utc)
-    hours = [base.replace(hour=h % 24) for h in range(48)]
+def mock_entry() -> MagicMock:
+    """Config entry mock with all required fields set to sensible defaults."""
+    entry = MagicMock()
+    entry.entry_id = "test_entry_id"
+    entry.data = {
+        "target_entity": "climate.ac",
+        "temp_sensor": "sensor.indoor_temp",
+        "comfort_schedule": "schedule.comfort",
+        "eco_schedule": "schedule.eco",
+        "presence_sensors": [],
+        "comfort_heat": 21.0,
+        "comfort_cool": 24.0,
+        "eco_heat": 18.0,
+        "eco_cool": 28.0,
+        "precondition_min": 30,
+        "update_interval": 10,
+    }
+    entry.options = {}
+    return entry
 
-    # Synthetic irradiance: bell curve peaking around 13:00 UTC
-    def irradiance(h: int) -> float:
-        hour_of_day = h % 24
-        if hour_of_day < 6 or hour_of_day > 20:
-            return 0.0
-        return max(0.0, 600 * (1 - ((hour_of_day - 13) / 7) ** 2))
 
-    radiation = [irradiance(i) for i in range(48)]
-    cloud     = [10.0] * 48
-    temp      = [15.0 + 5.0 * (i % 24 > 10 and i % 24 < 20) for i in range(48)]
-
-    return SolarData(
-        hourly_times=hours,
-        shortwave_radiation=radiation,
-        cloud_cover=cloud,
-        outdoor_temp=temp,
-        fetched_at=base,
+@pytest.fixture
+def coordinator_data(sample_solar_state: SolarState) -> CoordinatorData:
+    """A CoordinatorData snapshot suitable for climate entity tests."""
+    return CoordinatorData(
+        schedule_mode=ScheduleMode.COMFORT,
+        presence=PresenceState.HOME,
+        solar=sample_solar_state,
+        effective_mode=ScheduleMode.COMFORT,
+        target_setpoint_heat=21.0,
+        target_setpoint_cool=24.0,
+        hvac_mode=HVACMode.HEAT_COOL,
+        reason="Schedule: comfort",
     )

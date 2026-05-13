@@ -10,12 +10,12 @@ from homeassistant.components.climate import (
     HVACMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
+from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ATTRIBUTION, CONF_TEMP_SENSOR, DOMAIN
+from .const import CONF_TEMP_SENSOR, DOMAIN
 from .coordinator import ClimateControlCoordinator, CoordinatorData
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,13 +34,11 @@ async def async_setup_entry(
 class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], ClimateEntity):
     """Represents the climate_control virtual thermostat.
 
-    Reads setpoints from the coordinator and applies them to the target
-    climate entity; never performs its own I/O.
+    Reads setpoints from the coordinator and never performs its own I/O.
     """
 
     _attr_has_entity_name = True
     _attr_name = "Climate Control"
-    _attr_attribution = ATTRIBUTION
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.COOL, HVACMode.HEAT_COOL]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
@@ -94,9 +92,12 @@ class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], Climate
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         return {
-            "reason": self._data.reason,
-            "solar_irradiance_w_m2": round(self._data.current_irradiance, 1),
-            "presence": self._data.presence.value,
+            "schedule_mode":         self._data.schedule_mode.value,
+            "effective_mode":        self._data.effective_mode.value,
+            "presence":              self._data.presence.value,
+            "solar_output_w":        self._data.solar.current_output_w,
+            "solar_lookahead_sunny": self._data.solar.lookahead_sunny,
+            "reason":                self._data.reason,
         }
 
     # ── Service call handlers ─────────────────────────────────────────────────
