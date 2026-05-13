@@ -1,0 +1,14 @@
+{
+  "domain": "climate_control",
+  "name": "Climate Control",
+  "version": "1.0.0",
+  "documentation": "https://github.com/example/ha-climate-control",
+  "issue_tracker": "https://github.com/example/ha-climate-control/issues",
+  "requirements": [],
+  "dependencies": [],
+  "after_dependencies": ["recorder"],
+  "codeowners": ["@example"],
+  "iot_class": "cloud_polling",
+  "config_flow": true,
+  "quality_scale": "silver"
+}
