@@ -13,7 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_TARGET_ENTITY, CONF_TEMP_SENSOR
+from .const import CONF_TEMP_SENSOR
 from .coordinator import ClimateControlCoordinator, CoordinatorData
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,7 +51,6 @@ class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], Climate
         super().__init__(coordinator)
         self._entry = entry
         self._attr_unique_id = f"{entry.entry_id}_climate"
-        self._manual_hvac_mode: HVACMode | None = None
 
     # ── Properties derived from coordinator data ──────────────────────────────
 
@@ -61,14 +60,7 @@ class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], Climate
 
     @property
     def hvac_mode(self) -> HVACMode:
-        if self._manual_hvac_mode is not None:
-            return self._manual_hvac_mode
         return self._data.hvac_mode
-
-    def _handle_coordinator_update(self) -> None:
-        """Clear manual override when coordinator publishes new data."""
-        self._manual_hvac_mode = None
-        super()._handle_coordinator_update()
 
     @property
     def target_temperature_low(self) -> float:
@@ -108,19 +100,12 @@ class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], Climate
     # ── Service call handlers ─────────────────────────────────────────────────
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        """Forward manual HVAC mode override to the target entity immediately."""
-        _LOGGER.info("Manual HVAC mode override: %s", hvac_mode)
-        self._manual_hvac_mode = hvac_mode
-        target: str | None = self._entry.data.get(CONF_TARGET_ENTITY)
-        if target:
-            mapped = self.coordinator.map_hvac_mode(hvac_mode, target)
-            await self.hass.services.async_call(
-                "climate",
-                "set_hvac_mode",
-                {"entity_id": target, "hvac_mode": mapped},
-                blocking=True,
-            )
-        self.async_write_ha_state()
+        """Trigger an immediate coordinator refresh; the coordinator owns all mode decisions."""
+        _LOGGER.info(
+            "Mode request '%s' received — triggering refresh to let coordinator decide",
+            hvac_mode,
+        )
+        await self.coordinator.async_request_refresh()
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Manual setpoint override is a no-op; coordinator owns setpoints."""
