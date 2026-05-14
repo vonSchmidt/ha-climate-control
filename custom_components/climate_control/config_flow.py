@@ -136,9 +136,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_COMFORT_HEAT, default=DEFAULT_COMFORT_HEAT): vol.Coerce(float),
                 vol.Required(CONF_COMFORT_COOL, default=DEFAULT_COMFORT_COOL): vol.Coerce(float),
-                vol.Required(
-                    CONF_ECO_OFFSET, default=DEFAULT_ECO_OFFSET
-                ): selector.NumberSelector(
+                vol.Required(CONF_ECO_OFFSET, default=DEFAULT_ECO_OFFSET): selector.NumberSelector(
                     selector.NumberSelectorConfig(
                         min=0.5, max=10.0, step=0.5, mode=selector.NumberSelectorMode.SLIDER
                     )
