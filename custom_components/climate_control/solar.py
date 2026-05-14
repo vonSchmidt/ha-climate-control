@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any
 
 from homeassistant.core import HomeAssistant
 
@@ -108,7 +109,7 @@ class SolarAdvisor:
             )
             return False
 
-        forecast: list[dict] = state.attributes.get("forecast", [])
+        forecast: list[dict[str, Any]] = state.attributes.get("forecast", [])
         now = datetime.now(UTC)
 
         for slot in forecast:

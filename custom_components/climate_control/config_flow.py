@@ -6,9 +6,8 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
 from .const import (
@@ -47,7 +46,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 1 — target devices ───────────────────────────────────────────────
 
-    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
             self._data.update(user_input)
             return await self.async_step_schedule()
@@ -67,7 +66,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 2 — schedule entities ────────────────────────────────────────────
 
-    async def async_step_schedule(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_schedule(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -92,7 +91,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 3 — presence & pre-conditioning ─────────────────────────────────
 
-    async def async_step_presence(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_presence(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
             self._data.update(user_input)
             return await self.async_step_settings()
@@ -120,7 +119,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 4 — setpoints & solar ────────────────────────────────────────────
 
-    async def async_step_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_settings(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -167,7 +166,7 @@ class ClimateControlOptionsFlow(OptionsFlow):
     def __init__(self, config_entry: ConfigEntry) -> None:
         self._entry = config_entry
 
-    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -241,7 +240,8 @@ class ClimateControlOptionsFlow(OptionsFlow):
             ),
         }
 
-        schema = vol.Schema({**schedule_schema, **presence_schema, **settings_schema})
+        merged: dict[Any, Any] = {**schedule_schema, **presence_schema, **settings_schema}
+        schema = vol.Schema(merged)
         return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
 
 
