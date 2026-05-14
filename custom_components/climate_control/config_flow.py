@@ -260,7 +260,12 @@ class ClimateControlOptionsFlow(OptionsFlow):
             ),
         }
 
-        merged: dict[Any, Any] = {**area_schema, **schedule_schema, **presence_schema, **settings_schema}
+        merged: dict[Any, Any] = {
+            **area_schema,
+            **schedule_schema,
+            **presence_schema,
+            **settings_schema,
+        }
         schema = vol.Schema(merged)
         return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
 
