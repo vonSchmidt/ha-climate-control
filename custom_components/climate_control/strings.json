@@ -1,0 +1,110 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Devices",
+        "description": "Select the climate device to control and the indoor temperature sensor.",
+        "data": {
+          "target_entity": "Climate Device (AC / Heat Pump)",
+          "temp_sensor": "Indoor Temperature Sensor"
+        },
+        "data_description": {
+          "target_entity": "The climate entity that will be commanded (e.g. your AC or heat pump).",
+          "temp_sensor": "Temperature sensor used to display the current indoor temperature."
+        }
+      },
+      "schedule": {
+        "title": "Schedules",
+        "description": "Choose the schedule helpers that define when Comfort and Eco modes are active. They must be different entities.",
+        "data": {
+          "comfort_schedule": "Comfort Schedule",
+          "eco_schedule": "Eco Schedule"
+        },
+        "data_description": {
+          "comfort_schedule": "When this schedule is on, the system targets comfort setpoints.",
+          "eco_schedule": "When this schedule is on (and comfort is off), the system targets eco setpoints."
+        }
+      },
+      "presence": {
+        "title": "Presence",
+        "description": "Optionally select presence sensors so the system can switch to Eco when nobody is home and pre-condition before you return.",
+        "data": {
+          "presence_sensors": "Presence Sensors",
+          "precondition_min": "Pre-conditioning Time"
+        },
+        "data_description": {
+          "presence_sensors": "One or more binary sensors (presence, occupancy, or motion). Leave empty to disable presence detection.",
+          "precondition_min": "Minutes before your expected return when the system starts heating or cooling to comfort setpoints."
+        }
+      },
+      "settings": {
+        "title": "Setpoints & Updates",
+        "description": "Set temperature targets for each mode. Optionally connect a solar inverter or weather entity to enable solar-aware pre-cooling.",
+        "data": {
+          "comfort_heat": "Comfort Heating Setpoint (°C)",
+          "comfort_cool": "Comfort Cooling Setpoint (°C)",
+          "eco_heat": "Eco Heating Setpoint (°C)",
+          "eco_cool": "Eco Cooling Setpoint (°C)",
+          "solar_power_sensor": "Solar Inverter Sensor (optional)",
+          "weather_entity": "Weather Entity (optional)",
+          "update_interval": "Update Interval (minutes)"
+        },
+        "data_description": {
+          "comfort_heat": "Target heating temperature when someone is home.",
+          "comfort_cool": "Target cooling temperature when someone is home.",
+          "eco_heat": "Target heating temperature when nobody is home. Must be lower than the comfort heating setpoint.",
+          "eco_cool": "Target cooling temperature when nobody is home. Must be higher than the comfort cooling setpoint.",
+          "solar_power_sensor": "Inverter output sensor (W or kW). When solar production is high, the cooling setpoint is lowered to use free energy.",
+          "weather_entity": "Used to look ahead for sunny conditions and pre-cool before solar production peaks.",
+          "update_interval": "How often the coordinator recalculates and pushes new setpoints to the device."
+        }
+      }
+    },
+    "error": {
+      "same_entity": "Comfort and Eco schedules must be different entities.",
+      "comfort_heat_gte_cool": "Comfort heating setpoint must be lower than the comfort cooling setpoint.",
+      "eco_heat_gt_comfort": "Eco heating setpoint must not be higher than the comfort heating setpoint.",
+      "eco_cool_lt_comfort": "Eco cooling setpoint must not be lower than the comfort cooling setpoint."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Climate Control Settings",
+        "description": "Update schedules, presence sensors, setpoints, and solar settings.",
+        "data": {
+          "comfort_schedule": "Comfort Schedule",
+          "eco_schedule": "Eco Schedule",
+          "presence_sensors": "Presence Sensors",
+          "precondition_min": "Pre-conditioning Time",
+          "comfort_heat": "Comfort Heating Setpoint (°C)",
+          "comfort_cool": "Comfort Cooling Setpoint (°C)",
+          "eco_heat": "Eco Heating Setpoint (°C)",
+          "eco_cool": "Eco Cooling Setpoint (°C)",
+          "solar_power_sensor": "Solar Inverter Sensor (optional)",
+          "weather_entity": "Weather Entity (optional)",
+          "update_interval": "Update Interval (minutes)"
+        },
+        "data_description": {
+          "comfort_schedule": "When this schedule is on, the system targets comfort setpoints.",
+          "eco_schedule": "When this schedule is on (and comfort is off), the system targets eco setpoints.",
+          "presence_sensors": "One or more binary sensors. Leave empty to disable presence detection.",
+          "precondition_min": "Minutes before your expected return when pre-conditioning starts.",
+          "comfort_heat": "Target heating temperature when someone is home.",
+          "comfort_cool": "Target cooling temperature when someone is home.",
+          "eco_heat": "Target heating temperature when nobody is home.",
+          "eco_cool": "Target cooling temperature when nobody is home.",
+          "solar_power_sensor": "Inverter output sensor (W or kW) for solar-aware pre-cooling.",
+          "weather_entity": "Used to look ahead for sunny conditions.",
+          "update_interval": "How often the coordinator recalculates and pushes new setpoints."
+        }
+      }
+    },
+    "error": {
+      "same_entity": "Comfort and Eco schedules must be different entities.",
+      "comfort_heat_gte_cool": "Comfort heating setpoint must be lower than the comfort cooling setpoint.",
+      "eco_heat_gt_comfort": "Eco heating setpoint must not be higher than the comfort heating setpoint.",
+      "eco_cool_lt_comfort": "Eco cooling setpoint must not be lower than the comfort cooling setpoint."
+    }
+  }
+}
