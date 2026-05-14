@@ -11,7 +11,9 @@
       "Bash(ruff check *)",
       "Bash(python -m ruff check --fix custom_components/ tests/)",
       "Bash(ruff format *)",
-      "Bash(python -m ruff format custom_components/ tests/)"
+      "Bash(python -m ruff format custom_components/ tests/)",
+      "Bash(git config *)",
+      "Bash(chmod +x scripts/pre-push)"
     ]
   }
 }

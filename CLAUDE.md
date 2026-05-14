@@ -29,6 +29,11 @@ See SPEC.md for full module design.
 - Mock all external HTTP calls — no live API calls in tests
 - Min coverage target: 80%
 
+## Setup (one-time per clone)
+```sh
+git config core.hooksPath scripts   # enables pre-push checks
+```
+
 ## Git
 - Conventional commits: feat/fix/test/refactor/docs
 - Never commit secrets or API keys
