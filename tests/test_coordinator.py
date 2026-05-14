@@ -152,7 +152,10 @@ class TestPresenceOverride:
     def test_eco_away_within_precondition_upgrades(self) -> None:
         coord = _make_coordinator()
         _, _, _, effective, reason = coord._compute(
-            ScheduleMode.ECO, PresenceState.AWAY, _solar(False), minutes_away=10.0,
+            ScheduleMode.ECO,
+            PresenceState.AWAY,
+            _solar(False),
+            minutes_away=10.0,
             current_temp=_TEMP_COLD,
         )
         assert effective == ScheduleMode.COMFORT
@@ -161,7 +164,10 @@ class TestPresenceOverride:
     def test_eco_away_outside_precondition_stays_eco(self) -> None:
         coord = _make_coordinator()
         _, _, _, effective, _ = coord._compute(
-            ScheduleMode.ECO, PresenceState.AWAY, _solar(False), minutes_away=60.0,
+            ScheduleMode.ECO,
+            PresenceState.AWAY,
+            _solar(False),
+            minutes_away=60.0,
             current_temp=_TEMP_COLD,
         )
         assert effective == ScheduleMode.ECO
@@ -169,7 +175,10 @@ class TestPresenceOverride:
     def test_eco_away_no_last_seen_stays_eco(self) -> None:
         coord = _make_coordinator()
         _, _, _, effective, _ = coord._compute(
-            ScheduleMode.ECO, PresenceState.AWAY, _solar(False), minutes_away=None,
+            ScheduleMode.ECO,
+            PresenceState.AWAY,
+            _solar(False),
+            minutes_away=None,
             current_temp=_TEMP_COLD,
         )
         assert effective == ScheduleMode.ECO
@@ -177,7 +186,10 @@ class TestPresenceOverride:
     def test_eco_unknown_within_precondition_upgrades(self) -> None:
         coord = _make_coordinator()
         _, _, _, effective, _ = coord._compute(
-            ScheduleMode.ECO, PresenceState.UNKNOWN, _solar(False), minutes_away=5.0,
+            ScheduleMode.ECO,
+            PresenceState.UNKNOWN,
+            _solar(False),
+            minutes_away=5.0,
             current_temp=_TEMP_COLD,
         )
         assert effective == ScheduleMode.COMFORT
