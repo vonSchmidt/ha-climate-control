@@ -14,8 +14,7 @@ from .const import (
     CONF_COMFORT_COOL,
     CONF_COMFORT_HEAT,
     CONF_COMFORT_SCHEDULE,
-    CONF_ECO_COOL,
-    CONF_ECO_HEAT,
+    CONF_ECO_OFFSET,
     CONF_ECO_SCHEDULE,
     CONF_PRECONDITION_MIN,
     CONF_PRESENCE_SENSORS,
@@ -26,8 +25,7 @@ from .const import (
     CONF_WEATHER_ENTITY,
     DEFAULT_COMFORT_COOL,
     DEFAULT_COMFORT_HEAT,
-    DEFAULT_ECO_COOL,
-    DEFAULT_ECO_HEAT,
+    DEFAULT_ECO_OFFSET,
     DEFAULT_PRECONDITION,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
@@ -138,8 +136,13 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_COMFORT_HEAT, default=DEFAULT_COMFORT_HEAT): vol.Coerce(float),
                 vol.Required(CONF_COMFORT_COOL, default=DEFAULT_COMFORT_COOL): vol.Coerce(float),
-                vol.Required(CONF_ECO_HEAT, default=DEFAULT_ECO_HEAT): vol.Coerce(float),
-                vol.Required(CONF_ECO_COOL, default=DEFAULT_ECO_COOL): vol.Coerce(float),
+                vol.Required(
+                    CONF_ECO_OFFSET, default=DEFAULT_ECO_OFFSET
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0.5, max=10.0, step=0.5, mode=selector.NumberSelectorMode.SLIDER
+                    )
+                ),
                 vol.Optional(CONF_SOLAR_POWER_SENSOR): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="sensor")
                 ),
@@ -225,11 +228,12 @@ class ClimateControlOptionsFlow(OptionsFlow):
                 CONF_COMFORT_COOL, default=current.get(CONF_COMFORT_COOL, DEFAULT_COMFORT_COOL)
             ): vol.Coerce(float),
             vol.Required(
-                CONF_ECO_HEAT, default=current.get(CONF_ECO_HEAT, DEFAULT_ECO_HEAT)
-            ): vol.Coerce(float),
-            vol.Required(
-                CONF_ECO_COOL, default=current.get(CONF_ECO_COOL, DEFAULT_ECO_COOL)
-            ): vol.Coerce(float),
+                CONF_ECO_OFFSET, default=current.get(CONF_ECO_OFFSET, DEFAULT_ECO_OFFSET)
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=0.5, max=10.0, step=0.5, mode=selector.NumberSelectorMode.SLIDER
+                )
+            ),
             vol.Optional(
                 CONF_SOLAR_POWER_SENSOR,
                 description={"suggested_value": current.get(CONF_SOLAR_POWER_SENSOR)},
@@ -259,19 +263,8 @@ class ClimateControlOptionsFlow(OptionsFlow):
 def _validate_setpoints(data: dict[str, Any]) -> dict[str, str]:
     """Return an errors dict (empty = valid) for the setpoint fields."""
     errors: dict[str, str] = {}
-
     comfort_heat = float(data.get(CONF_COMFORT_HEAT, DEFAULT_COMFORT_HEAT))
     comfort_cool = float(data.get(CONF_COMFORT_COOL, DEFAULT_COMFORT_COOL))
-    eco_heat = float(data.get(CONF_ECO_HEAT, DEFAULT_ECO_HEAT))
-    eco_cool = float(data.get(CONF_ECO_COOL, DEFAULT_ECO_COOL))
-    eco_heat = float(data.get(CONF_ECO_HEAT, DEFAULT_ECO_HEAT))
-    eco_cool = float(data.get(CONF_ECO_COOL, DEFAULT_ECO_COOL))
-
     if comfort_heat >= comfort_cool:
         errors["base"] = "comfort_heat_gte_cool"
-    elif eco_heat > comfort_heat:
-        errors["base"] = "eco_heat_gt_comfort"
-    elif eco_cool < comfort_cool:
-        errors["base"] = "eco_cool_lt_comfort"
-
     return errors

@@ -22,7 +22,7 @@
         },
         "data_description": {
           "comfort_schedule": "When this schedule is on, the system targets comfort setpoints.",
-          "eco_schedule": "When this schedule is on (and comfort is off), the system targets eco setpoints."
+          "eco_schedule": "When this schedule is on (and comfort is off), the system relaxes the temperature range."
         }
       },
       "presence": {
@@ -39,21 +39,19 @@
       },
       "settings": {
         "title": "Setpoints & Updates",
-        "description": "Set temperature targets for each mode. Optionally connect a solar inverter or weather entity to enable solar-aware pre-cooling.",
+        "description": "Set your comfort temperature range and how much to relax it in Eco mode. Optionally connect a solar inverter or weather entity.",
         "data": {
           "comfort_heat": "Comfort Heating Setpoint (°C)",
           "comfort_cool": "Comfort Cooling Setpoint (°C)",
-          "eco_heat": "Eco Heating Setpoint (°C)",
-          "eco_cool": "Eco Cooling Setpoint (°C)",
+          "eco_offset": "Eco Relaxation (°C)",
           "solar_power_sensor": "Solar Inverter Sensor (optional)",
           "weather_entity": "Weather Entity (optional)",
           "update_interval": "Update Interval (minutes)"
         },
         "data_description": {
-          "comfort_heat": "Target heating temperature when someone is home.",
-          "comfort_cool": "Target cooling temperature when someone is home.",
-          "eco_heat": "Target heating temperature when nobody is home. Must be lower than the comfort heating setpoint.",
-          "eco_cool": "Target cooling temperature when nobody is home. Must be higher than the comfort cooling setpoint.",
+          "comfort_heat": "Heat when indoor temperature drops below this.",
+          "comfort_cool": "Cool when indoor temperature rises above this.",
+          "eco_offset": "In Eco mode the heating setpoint is lowered by this amount and the cooling setpoint is raised by the same amount. Example: 3 °C offset with 21–24 °C comfort range gives 18–27 °C in Eco.",
           "solar_power_sensor": "Inverter output sensor (W or kW). When solar production is high, the cooling setpoint is lowered to use free energy.",
           "weather_entity": "Used to look ahead for sunny conditions and pre-cool before solar production peaks.",
           "update_interval": "How often the coordinator recalculates and pushes new setpoints to the device."
@@ -62,9 +60,7 @@
     },
     "error": {
       "same_entity": "Comfort and Eco schedules must be different entities.",
-      "comfort_heat_gte_cool": "Comfort heating setpoint must be lower than the comfort cooling setpoint.",
-      "eco_heat_gt_comfort": "Eco heating setpoint must not be higher than the comfort heating setpoint.",
-      "eco_cool_lt_comfort": "Eco cooling setpoint must not be lower than the comfort cooling setpoint."
+      "comfort_heat_gte_cool": "Heating setpoint must be lower than the cooling setpoint."
     }
   },
   "options": {
@@ -79,21 +75,19 @@
           "precondition_min": "Pre-conditioning Time",
           "comfort_heat": "Comfort Heating Setpoint (°C)",
           "comfort_cool": "Comfort Cooling Setpoint (°C)",
-          "eco_heat": "Eco Heating Setpoint (°C)",
-          "eco_cool": "Eco Cooling Setpoint (°C)",
+          "eco_offset": "Eco Relaxation (°C)",
           "solar_power_sensor": "Solar Inverter Sensor (optional)",
           "weather_entity": "Weather Entity (optional)",
           "update_interval": "Update Interval (minutes)"
         },
         "data_description": {
           "comfort_schedule": "When this schedule is on, the system targets comfort setpoints.",
-          "eco_schedule": "When this schedule is on (and comfort is off), the system targets eco setpoints.",
+          "eco_schedule": "When this schedule is on (and comfort is off), the system relaxes the temperature range.",
           "presence_sensors": "One or more binary sensors. Leave empty to disable presence detection.",
           "precondition_min": "Minutes before your expected return when pre-conditioning starts.",
-          "comfort_heat": "Target heating temperature when someone is home.",
-          "comfort_cool": "Target cooling temperature when someone is home.",
-          "eco_heat": "Target heating temperature when nobody is home.",
-          "eco_cool": "Target cooling temperature when nobody is home.",
+          "comfort_heat": "Heat when indoor temperature drops below this.",
+          "comfort_cool": "Cool when indoor temperature rises above this.",
+          "eco_offset": "In Eco mode the heating setpoint is lowered by this amount and the cooling setpoint is raised by the same amount.",
           "solar_power_sensor": "Inverter output sensor (W or kW) for solar-aware pre-cooling.",
           "weather_entity": "Used to look ahead for sunny conditions.",
           "update_interval": "How often the coordinator recalculates and pushes new setpoints."
@@ -102,9 +96,7 @@
     },
     "error": {
       "same_entity": "Comfort and Eco schedules must be different entities.",
-      "comfort_heat_gte_cool": "Comfort heating setpoint must be lower than the comfort cooling setpoint.",
-      "eco_heat_gt_comfort": "Eco heating setpoint must not be higher than the comfort heating setpoint.",
-      "eco_cool_lt_comfort": "Eco cooling setpoint must not be lower than the comfort cooling setpoint."
+      "comfort_heat_gte_cool": "Heating setpoint must be lower than the cooling setpoint."
     }
   }
 }

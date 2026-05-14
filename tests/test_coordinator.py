@@ -12,13 +12,11 @@ from custom_components.climate_control.const import (
     CONF_COMFORT_COOL,
     CONF_COMFORT_HEAT,
     CONF_COMFORT_SCHEDULE,
-    CONF_ECO_COOL,
-    CONF_ECO_HEAT,
+    CONF_ECO_OFFSET,
     CONF_ECO_SCHEDULE,
     DEFAULT_COMFORT_COOL,
     DEFAULT_COMFORT_HEAT,
-    DEFAULT_ECO_COOL,
-    DEFAULT_ECO_HEAT,
+    DEFAULT_ECO_OFFSET,
     SOLAR_OFFSET_HIGH,
     SOLAR_OFFSET_LOW,
 )
@@ -52,8 +50,7 @@ def _make_coordinator(
         "temp_sensor": "sensor.indoor_temp",
         CONF_COMFORT_HEAT: DEFAULT_COMFORT_HEAT,
         CONF_COMFORT_COOL: DEFAULT_COMFORT_COOL,
-        CONF_ECO_HEAT: DEFAULT_ECO_HEAT,
-        CONF_ECO_COOL: DEFAULT_ECO_COOL,
+        CONF_ECO_OFFSET: DEFAULT_ECO_OFFSET,
         "precondition_min": 30,
         "update_interval": 10,
     }
@@ -130,8 +127,8 @@ class TestPresenceOverride:
             ScheduleMode.COMFORT, PresenceState.AWAY, _solar(False), None, _TEMP_COLD
         )
         assert effective == ScheduleMode.ECO
-        assert heat == pytest.approx(DEFAULT_ECO_HEAT)
-        assert cool == pytest.approx(DEFAULT_ECO_COOL)
+        assert heat == pytest.approx(DEFAULT_COMFORT_HEAT - DEFAULT_ECO_OFFSET)
+        assert cool == pytest.approx(DEFAULT_COMFORT_COOL + DEFAULT_ECO_OFFSET)
 
     def test_comfort_unknown_downgrades_to_eco(self) -> None:
         coord = _make_coordinator()
@@ -147,7 +144,7 @@ class TestPresenceOverride:
         )
         assert effective == ScheduleMode.COMFORT
         assert heat == pytest.approx(DEFAULT_COMFORT_HEAT)
-        assert cool == pytest.approx(DEFAULT_COMFORT_COOL)
+        assert cool == pytest.approx(DEFAULT_COMFORT_COOL)  # no solar offset, no eco offset
 
     def test_eco_away_within_precondition_upgrades(self) -> None:
         coord = _make_coordinator()
@@ -310,13 +307,13 @@ class TestOptionsOverride:
         assert heat == pytest.approx(22.0)
         assert cool == pytest.approx(26.0)
 
-    def test_options_eco_setpoints_override_data(self) -> None:
-        coord = _make_coordinator(options={CONF_ECO_HEAT: 17.0, CONF_ECO_COOL: 30.0})
+    def test_options_eco_offset_applies_correctly(self) -> None:
+        coord = _make_coordinator(options={CONF_ECO_OFFSET: 4.0})
         heat, cool, _, _, _ = coord._compute(
             ScheduleMode.ECO, PresenceState.AWAY, _solar(False), None, _TEMP_COLD
         )
-        assert heat == pytest.approx(17.0)
-        assert cool == pytest.approx(30.0)
+        assert heat == pytest.approx(DEFAULT_COMFORT_HEAT - 4.0)
+        assert cool == pytest.approx(DEFAULT_COMFORT_COOL + 4.0)
 
 
 # ── Temperature-based mode selection ─────────────────────────────────────────

@@ -32,8 +32,7 @@ _STEP3 = {
 _STEP4 = {
     "comfort_heat": 21.0,
     "comfort_cool": 24.0,
-    "eco_heat": 18.0,
-    "eco_cool": 28.0,
+    "eco_offset": 3.0,
     "update_interval": 10,
 }
 _ALL_DATA = {**_STEP1, **_STEP2, **_STEP3, **_STEP4}
@@ -123,6 +122,7 @@ async def test_options_flow_saves_updated_setpoints(hass: object) -> None:
         **_STEP4,
         "comfort_heat": 22.0,
         "comfort_cool": 25.0,
+        "eco_offset": 3.0,
     }
     result = await hass.config_entries.options.async_configure(result["flow_id"], updated)
     assert result["type"] == FlowResultType.CREATE_ENTRY

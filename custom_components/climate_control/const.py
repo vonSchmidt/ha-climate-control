@@ -16,15 +16,13 @@ CONF_SOLAR_POWER_SENSOR = "solar_power_sensor"  # sensor.* inverter output (W or
 CONF_WEATHER_ENTITY = "weather_entity"  # weather.* Met.no entity, optional
 CONF_COMFORT_HEAT = "comfort_heat"  # °C — occupied heating setpoint
 CONF_COMFORT_COOL = "comfort_cool"  # °C — occupied cooling setpoint
-CONF_ECO_HEAT = "eco_heat"  # °C — away/eco heating setpoint
-CONF_ECO_COOL = "eco_cool"  # °C — away/eco cooling setpoint
+CONF_ECO_OFFSET = "eco_offset"  # °C — how much to relax comfort range in eco mode
 CONF_UPDATE_INTERVAL = "update_interval"  # int — coordinator refresh interval (minutes)
 
 # ── Default values ─────────────────────────────────────────────────────────────
 DEFAULT_COMFORT_HEAT = 21.0  # °C
 DEFAULT_COMFORT_COOL = 24.0  # °C
-DEFAULT_ECO_HEAT = 18.0  # °C
-DEFAULT_ECO_COOL = 28.0  # °C
+DEFAULT_ECO_OFFSET = 3.0  # °C — eco heat = comfort_heat − offset, eco cool = comfort_cool + offset
 DEFAULT_PRECONDITION = 30  # minutes
 DEFAULT_UPDATE_INTERVAL = 10  # minutes
 

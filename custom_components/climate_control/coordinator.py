@@ -15,8 +15,7 @@ from .const import (
     CONF_COMFORT_COOL,
     CONF_COMFORT_HEAT,
     CONF_COMFORT_SCHEDULE,
-    CONF_ECO_COOL,
-    CONF_ECO_HEAT,
+    CONF_ECO_OFFSET,
     CONF_ECO_SCHEDULE,
     CONF_PRECONDITION_MIN,
     CONF_PRESENCE_SENSORS,
@@ -27,8 +26,7 @@ from .const import (
     CONF_WEATHER_ENTITY,
     DEFAULT_COMFORT_COOL,
     DEFAULT_COMFORT_HEAT,
-    DEFAULT_ECO_COOL,
-    DEFAULT_ECO_HEAT,
+    DEFAULT_ECO_OFFSET,
     DEFAULT_PRECONDITION,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
@@ -244,8 +242,9 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         """Compute setpoints; return (heat, cool, hvac_mode, effective_mode, reason)."""
         comfort_heat = self._get_option(CONF_COMFORT_HEAT, DEFAULT_COMFORT_HEAT)
         comfort_cool = self._get_option(CONF_COMFORT_COOL, DEFAULT_COMFORT_COOL)
-        eco_heat = self._get_option(CONF_ECO_HEAT, DEFAULT_ECO_HEAT)
-        eco_cool = self._get_option(CONF_ECO_COOL, DEFAULT_ECO_COOL)
+        eco_offset = self._get_option(CONF_ECO_OFFSET, DEFAULT_ECO_OFFSET)
+        eco_heat = comfort_heat - eco_offset
+        eco_cool = comfort_cool + eco_offset
         precondition = int(self._get_option(CONF_PRECONDITION_MIN, DEFAULT_PRECONDITION))
 
         # ── Manual override: beats schedule, presence, and temperature logic ──

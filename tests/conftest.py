@@ -59,8 +59,7 @@ def mock_entry() -> MagicMock:
         "presence_sensors": [],
         "comfort_heat": 21.0,
         "comfort_cool": 24.0,
-        "eco_heat": 18.0,
-        "eco_cool": 28.0,
+        "eco_offset": 3.0,
         "precondition_min": 30,
         "update_interval": 10,
     }
