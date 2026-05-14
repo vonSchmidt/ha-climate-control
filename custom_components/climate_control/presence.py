@@ -1,4 +1,5 @@
 """Presence / occupancy detection for Climate Control."""
+
 from __future__ import annotations
 
 import logging
@@ -13,8 +14,8 @@ _LOGGER = logging.getLogger(__name__)
 class PresenceState(Enum):
     """Occupancy state as determined by the configured binary sensors."""
 
-    HOME    = "home"
-    AWAY    = "away"
+    HOME = "home"
+    AWAY = "away"
     UNKNOWN = "unknown"
 
 

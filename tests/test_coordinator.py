@@ -1,4 +1,5 @@
 """Tests for ClimateControlCoordinator — _compute logic and _async_update_data."""
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock
@@ -79,9 +80,7 @@ class TestScheduleOff:
 
     def test_off_schedule_ignores_presence(self) -> None:
         coord = _make_coordinator()
-        _, _, hvac, _, _ = coord._compute(
-            ScheduleMode.OFF, PresenceState.AWAY, _solar(False), None
-        )
+        _, _, hvac, _, _ = coord._compute(ScheduleMode.OFF, PresenceState.AWAY, _solar(False), None)
         assert hvac == HVACMode.OFF
 
     def test_off_schedule_ignores_solar(self) -> None:

@@ -1,4 +1,5 @@
 """Tests for custom_components.climate_control.presence (PresenceEvaluator)."""
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock

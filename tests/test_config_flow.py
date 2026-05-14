@@ -1,4 +1,5 @@
 """Config flow integration tests for Climate Control."""
+
 from __future__ import annotations
 
 import pytest

@@ -1,4 +1,5 @@
 """Tests for custom_components.climate_control.solar (SolarAdvisor)."""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta, UTC
