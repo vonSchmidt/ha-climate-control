@@ -22,6 +22,7 @@ from .const import (
     CONF_PRESENCE_SENSORS,
     CONF_SOLAR_POWER_SENSOR,
     CONF_TARGET_ENTITY,
+    CONF_TEMP_SENSOR,
     CONF_UPDATE_INTERVAL,
     CONF_WEATHER_ENTITY,
     DEFAULT_COMFORT_COOL,
@@ -110,8 +111,10 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         except Exception as exc:
             raise UpdateFailed(f"Error reading entity states: {exc}") from exc
 
+        current_temp = self._read_temperature()
+
         heat_sp, cool_sp, hvac_mode, effective_mode, reason = self._compute(
-            schedule_mode, presence, solar_state, minutes_away
+            schedule_mode, presence, solar_state, minutes_away, current_temp
         )
 
         _LOGGER.debug(
@@ -138,6 +141,19 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────
+
+    def _read_temperature(self) -> float | None:
+        """Read current indoor temperature from the configured sensor."""
+        sensor_id: str | None = self._entry.data.get(CONF_TEMP_SENSOR)
+        if not sensor_id:
+            return None
+        state = self.hass.states.get(sensor_id)
+        if state is None or state.state in ("unavailable", "unknown"):
+            return None
+        try:
+            return float(state.state)
+        except ValueError:
+            return None
 
     def map_hvac_mode(self, hvac_mode: HVACMode, target: str) -> HVACMode:
         """Return the best equivalent HVACMode the target device actually supports.
@@ -184,15 +200,18 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
                 _LOGGER.debug("%s hvac_mode → %s (was %s)", target, mapped_mode, hvac_mode)
 
             if sp_changed and hvac_mode != HVACMode.OFF:
-                await self.hass.services.async_call(
-                    "climate",
-                    "set_temperature",
-                    {
+                if hvac_mode == HVACMode.HEAT:
+                    temp_payload: dict = {"entity_id": target, "temperature": heat_sp}
+                elif hvac_mode == HVACMode.COOL:
+                    temp_payload = {"entity_id": target, "temperature": cool_sp}
+                else:
+                    temp_payload = {
                         "entity_id": target,
                         "target_temp_low": heat_sp,
                         "target_temp_high": cool_sp,
-                    },
-                    blocking=True,
+                    }
+                await self.hass.services.async_call(
+                    "climate", "set_temperature", temp_payload, blocking=True
                 )
                 _LOGGER.debug("Set %s temperature → heat=%.1f cool=%.1f", target, heat_sp, cool_sp)
         except Exception as exc:
@@ -208,6 +227,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         presence: PresenceState,
         solar_state: SolarState,
         minutes_away: float | None,
+        current_temp: float | None,
     ) -> tuple[float, float, HVACMode, ScheduleMode, str]:
         """Compute setpoints; return (heat, cool, hvac_mode, effective_mode, reason)."""
         comfort_heat = self._get_option(CONF_COMFORT_HEAT, DEFAULT_COMFORT_HEAT)
@@ -271,10 +291,20 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
                 solar_offset = SOLAR_OFFSET_LOW
                 reason += f" | Sunny forecast incoming → pre-cool -{SOLAR_OFFSET_LOW}°C"
 
-        return (
-            base_heat,
-            base_cool - solar_offset,
-            HVACMode.HEAT_COOL,
-            effective_mode,
-            reason,
-        )
+        cool_sp = base_cool - solar_offset
+
+        # ── Step 5: temperature-based mode selection ──────────────────────────
+        if current_temp is None:
+            hvac_mode = HVACMode.OFF
+            reason += " | No temperature reading → off"
+        elif current_temp < base_heat:
+            hvac_mode = HVACMode.HEAT
+            reason += f" | {current_temp:.1f}°C < {base_heat:.1f}°C → heat"
+        elif current_temp > cool_sp:
+            hvac_mode = HVACMode.COOL
+            reason += f" | {current_temp:.1f}°C > {cool_sp:.1f}°C → cool"
+        else:
+            hvac_mode = HVACMode.OFF
+            reason += f" | {current_temp:.1f}°C in range [{base_heat:.1f}–{cool_sp:.1f}°C] → off"
+
+        return (base_heat, cool_sp, hvac_mode, effective_mode, reason)
