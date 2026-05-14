@@ -1,6 +1,5 @@
 """Config flow for Climate Control integration."""
 
-
 from __future__ import annotations
 
 import logging
