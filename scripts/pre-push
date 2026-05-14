@@ -2,15 +2,15 @@
 set -euo pipefail
 
 echo "==> ruff lint"
-ruff check custom_components/ tests/
+python -m ruff check custom_components/ tests/
 
 echo "==> ruff format"
-ruff format --check custom_components/ tests/
+python -m ruff format --check custom_components/ tests/
 
 echo "==> mypy"
-mypy custom_components/
+python -m mypy custom_components/
 
 echo "==> pytest"
-pytest tests/ -v
+python -m pytest tests/ -v
 
 echo "All checks passed."
