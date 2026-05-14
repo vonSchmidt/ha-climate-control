@@ -139,11 +139,30 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
     # ── Private helpers ───────────────────────────────────────────────────────
 
+    def map_hvac_mode(self, hvac_mode: HVACMode, target: str) -> HVACMode:
+        """Return the best equivalent HVACMode the target device actually supports.
+
+        Handles devices that expose 'auto' instead of 'heat_cool'.
+        """
+        if hvac_mode == HVACMode.OFF:
+            return HVACMode.OFF
+        state = self.hass.states.get(target)
+        if state is None:
+            return hvac_mode
+        supported: list[str] = state.attributes.get("hvac_modes", [])
+        if hvac_mode in supported:
+            return hvac_mode
+        if hvac_mode == HVACMode.HEAT_COOL and HVACMode.AUTO in supported:
+            return HVACMode.AUTO
+        return hvac_mode
+
     async def _apply_to_target(self, hvac_mode: HVACMode, heat_sp: float, cool_sp: float) -> None:
         """Push computed mode and setpoints to the real AC entity, only on change."""
         target: str | None = self._entry.data.get(CONF_TARGET_ENTITY)
         if not target:
             return
+
+        mapped_mode = self.map_hvac_mode(hvac_mode, target)
 
         prev = self.data  # None on first run
         mode_changed = prev is None or prev.hvac_mode != hvac_mode
@@ -159,10 +178,10 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
                 await self.hass.services.async_call(
                     "climate",
                     "set_hvac_mode",
-                    {"entity_id": target, "hvac_mode": hvac_mode},
+                    {"entity_id": target, "hvac_mode": mapped_mode},
                     blocking=True,
                 )
-                _LOGGER.debug("Set %s hvac_mode → %s", target, hvac_mode)
+                _LOGGER.debug("Set %s hvac_mode → %s (mapped from %s)", target, mapped_mode, hvac_mode)
 
             if sp_changed and hvac_mode != HVACMode.OFF:
                 await self.hass.services.async_call(

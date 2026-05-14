@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from homeassistant.components.climate.const import HVACMode
@@ -113,6 +113,12 @@ class TestServiceHandlers:
         entity, _ = _make_entity(coordinator_data)
         await entity.async_set_temperature(temperature=25.0)
 
-    async def test_set_hvac_mode_does_not_raise(self, coordinator_data: CoordinatorData) -> None:
+    async def test_set_hvac_mode_stores_mode_and_writes_state(
+        self, coordinator_data: CoordinatorData
+    ) -> None:
         entity, _ = _make_entity(coordinator_data)
-        await entity.async_set_hvac_mode(HVACMode.COOL)
+        with patch.object(entity, "async_write_ha_state") as mock_write:
+            await entity.async_set_hvac_mode(HVACMode.COOL)
+        assert entity._manual_hvac_mode == HVACMode.COOL
+        assert entity.hvac_mode == HVACMode.COOL
+        mock_write.assert_called_once()
