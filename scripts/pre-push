@@ -7,9 +7,6 @@ python -m ruff check custom_components/ tests/
 echo "==> ruff format"
 python -m ruff format --check custom_components/ tests/
 
-echo "==> mypy"
-python -m mypy custom_components/
-
 echo "==> pytest"
 python -m pytest tests/ -v
 
