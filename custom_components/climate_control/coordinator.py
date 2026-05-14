@@ -201,7 +201,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
             if sp_changed and hvac_mode != HVACMode.OFF:
                 if hvac_mode == HVACMode.HEAT:
-                    temp_payload: dict = {"entity_id": target, "temperature": heat_sp}
+                    temp_payload: dict[str, object] = {"entity_id": target, "temperature": heat_sp}
                 elif hvac_mode == HVACMode.COOL:
                     temp_payload = {"entity_id": target, "temperature": cool_sp}
                 else:
