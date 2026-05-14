@@ -13,7 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_TEMP_SENSOR
+from .const import CONF_TARGET_ENTITY, CONF_TEMP_SENSOR
 from .coordinator import ClimateControlCoordinator, CoordinatorData
 
 _LOGGER = logging.getLogger(__name__)
@@ -100,8 +100,16 @@ class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], Climate
     # ── Service call handlers ─────────────────────────────────────────────────
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        """Allow manual HVAC mode override (logs only; coordinator controls setpoints)."""
+        """Forward manual HVAC mode override to the target entity immediately."""
         _LOGGER.info("Manual HVAC mode override requested: %s", hvac_mode)
+        target: str | None = self._entry.data.get(CONF_TARGET_ENTITY)
+        if target:
+            await self.hass.services.async_call(
+                "climate",
+                "set_hvac_mode",
+                {"entity_id": target, "hvac_mode": hvac_mode},
+                blocking=True,
+            )
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Manual setpoint override is a no-op; coordinator owns setpoints."""

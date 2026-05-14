@@ -21,6 +21,7 @@ from .const import (
     CONF_PRECONDITION_MIN,
     CONF_PRESENCE_SENSORS,
     CONF_SOLAR_POWER_SENSOR,
+    CONF_TARGET_ENTITY,
     CONF_UPDATE_INTERVAL,
     CONF_WEATHER_ENTITY,
     DEFAULT_COMFORT_COOL,
@@ -123,6 +124,8 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
             reason,
         )
 
+        await self._apply_to_target(hvac_mode, heat_sp, cool_sp)
+
         return CoordinatorData(
             schedule_mode=schedule_mode,
             presence=presence,
@@ -135,6 +138,50 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────
+
+    async def _apply_to_target(
+        self, hvac_mode: HVACMode, heat_sp: float, cool_sp: float
+    ) -> None:
+        """Push computed mode and setpoints to the real AC entity, only on change."""
+        target: str | None = self._entry.data.get(CONF_TARGET_ENTITY)
+        if not target:
+            return
+
+        prev = self.data  # None on first run
+        mode_changed = prev is None or prev.hvac_mode != hvac_mode
+        sp_changed = prev is None or (
+            prev.target_setpoint_heat != heat_sp or prev.target_setpoint_cool != cool_sp
+        )
+
+        if not mode_changed and not sp_changed:
+            return
+
+        try:
+            if mode_changed:
+                await self.hass.services.async_call(
+                    "climate",
+                    "set_hvac_mode",
+                    {"entity_id": target, "hvac_mode": hvac_mode},
+                    blocking=True,
+                )
+                _LOGGER.debug("Set %s hvac_mode → %s", target, hvac_mode)
+
+            if sp_changed and hvac_mode != HVACMode.OFF:
+                await self.hass.services.async_call(
+                    "climate",
+                    "set_temperature",
+                    {
+                        "entity_id": target,
+                        "target_temp_low": heat_sp,
+                        "target_temp_high": cool_sp,
+                    },
+                    blocking=True,
+                )
+                _LOGGER.debug(
+                    "Set %s temperature → heat=%.1f cool=%.1f", target, heat_sp, cool_sp
+                )
+        except Exception as exc:
+            _LOGGER.error("Failed to update target entity %s: %s", target, exc)
 
     def _get_option(self, key: str, default: float | int) -> float:
         """Return option from options flow, falling back to data then default."""
