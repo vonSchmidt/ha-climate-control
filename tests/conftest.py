@@ -13,6 +13,11 @@ from custom_components.climate_control.schedule import ScheduleMode
 from custom_components.climate_control.solar import SolarState
 
 
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(enable_custom_integrations: None) -> None:
+    """Enable custom integrations for all tests."""
+
+
 def make_state(state_val: str, attributes: dict | None = None) -> MagicMock:
     """Return a minimal HA state object mock."""
     s = MagicMock()

@@ -31,7 +31,18 @@ See SPEC.md for full module design.
 
 ## Setup (one-time per clone)
 ```sh
-git config core.hooksPath scripts   # enables pre-push checks
+git config core.hooksPath scripts          # enables pre-push checks
+docker build -f Dockerfile.test -t ha-climate-test .  # builds test image
+```
+
+## Running tests locally
+Tests require Linux — run them via Docker:
+```sh
+# First time or after changing dependencies:
+docker build -f Dockerfile.test -t ha-climate-test .
+
+# Run tests (code changes picked up automatically via volume mount):
+docker compose -f docker-compose.test.yml run --rm test
 ```
 
 ## Git
