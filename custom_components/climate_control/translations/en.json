@@ -2,15 +2,17 @@
   "config": {
     "step": {
       "user": {
-        "title": "Devices",
-        "description": "Select the climate device to control and the indoor temperature sensor.",
+        "title": "Area & Devices",
+        "description": "Select the area this Climate Control belongs to, the climate device to control, and the indoor temperature sensor.",
         "data": {
+          "area": "Area",
           "target_entity": "Climate Device (AC / Heat Pump)",
           "temp_sensor": "Indoor Temperature Sensor"
         },
         "data_description": {
+          "area": "The room or zone this integration controls. Used to name the integration and auto-assign entities.",
           "target_entity": "The climate entity that will be commanded (e.g. your AC or heat pump).",
-          "temp_sensor": "Temperature sensor used to display the current indoor temperature."
+          "temp_sensor": "Temperature sensor used to read the current indoor temperature."
         }
       },
       "schedule": {
@@ -69,6 +71,7 @@
         "title": "Climate Control Settings",
         "description": "Update schedules, presence sensors, setpoints, and solar settings.",
         "data": {
+          "area": "Area",
           "comfort_schedule": "Comfort Schedule",
           "eco_schedule": "Eco Schedule",
           "presence_sensors": "Presence Sensors",
@@ -81,6 +84,7 @@
           "update_interval": "Update Interval (minutes)"
         },
         "data_description": {
+          "area": "Move this integration to a different area.",
           "comfort_schedule": "When this schedule is on, the system targets comfort setpoints.",
           "eco_schedule": "When this schedule is on (and comfort is off), the system relaxes the temperature range.",
           "presence_sensors": "One or more binary sensors. Leave empty to disable presence detection.",

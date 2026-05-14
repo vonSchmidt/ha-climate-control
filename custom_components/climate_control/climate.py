@@ -10,10 +10,11 @@ from homeassistant.components.climate.const import ClimateEntityFeature, HVACMod
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_TEMP_SENSOR
+from .const import CONF_AREA, CONF_TEMP_SENSOR
 from .coordinator import ClimateControlCoordinator, CoordinatorData
 
 _LOGGER = logging.getLogger(__name__)
@@ -53,6 +54,15 @@ class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], Climate
         self._attr_unique_id = f"{entry.entry_id}_climate"
 
     # ── Properties derived from coordinator data ──────────────────────────────
+
+    @property
+    def suggested_area(self) -> str | None:
+        """Return area name so HA auto-assigns this entity on first registration."""
+        area_id: str | None = self._entry.data.get(CONF_AREA)
+        if not area_id:
+            return None
+        area = ar.async_get(self.hass).async_get_area(area_id)
+        return area.name if area else None
 
     @property
     def _data(self) -> CoordinatorData:

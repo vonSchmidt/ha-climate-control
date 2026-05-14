@@ -52,6 +52,7 @@ def mock_entry() -> MagicMock:
     entry = MagicMock()
     entry.entry_id = "test_entry_id"
     entry.data = {
+        "area": "living_room",
         "target_entity": "climate.ac",
         "temp_sensor": "sensor.indoor_temp",
         "comfort_schedule": "schedule.comfort",

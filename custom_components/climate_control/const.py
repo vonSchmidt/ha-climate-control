@@ -6,6 +6,7 @@ DOMAIN = "climate_control"
 PLATFORMS: list[str] = ["climate"]
 
 # ── Config entry keys ──────────────────────────────────────────────────────────
+CONF_AREA = "area"  # area ID the integration belongs to
 CONF_TARGET_ENTITY = "target_entity"  # climate.* entity to control
 CONF_TEMP_SENSOR = "temp_sensor"  # indoor temperature sensor entity
 CONF_COMFORT_SCHEDULE = "comfort_schedule"  # schedule.* entity — on = comfort mode

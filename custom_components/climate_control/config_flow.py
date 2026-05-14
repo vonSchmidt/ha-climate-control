@@ -8,9 +8,11 @@ from typing import Any
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
+from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import selector
 
 from .const import (
+    CONF_AREA,
     CONF_COMFORT_COOL,
     CONF_COMFORT_HEAT,
     CONF_COMFORT_SCHEDULE,
@@ -51,6 +53,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
         schema = vol.Schema(
             {
+                vol.Required(CONF_AREA): selector.AreaSelector(),
                 vol.Required(CONF_TARGET_ENTITY): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="climate")
                 ),
@@ -130,7 +133,9 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
             errors = _validate_setpoints(user_input)
             if not errors:
                 self._data.update(user_input)
-                return self.async_create_entry(title="Climate Control", data=self._data)
+                area = ar.async_get(self.hass).async_get_area(self._data[CONF_AREA])
+                title = f"{area.name} Climate Control" if area else "Climate Control"
+                return self.async_create_entry(title=title, data=self._data)
 
         schema = vol.Schema(
             {
@@ -182,6 +187,11 @@ class ClimateControlOptionsFlow(OptionsFlow):
                 return self.async_create_entry(title="", data=user_input)
 
         current = self._entry.options or self._entry.data
+
+        # Area
+        area_schema = {
+            vol.Required(CONF_AREA, default=current.get(CONF_AREA, "")): selector.AreaSelector(),
+        }
 
         # Comfort/eco schedule fields
         schedule_schema = {
@@ -250,7 +260,7 @@ class ClimateControlOptionsFlow(OptionsFlow):
             ),
         }
 
-        merged: dict[Any, Any] = {**schedule_schema, **presence_schema, **settings_schema}
+        merged: dict[Any, Any] = {**area_schema, **schedule_schema, **presence_schema, **settings_schema}
         schema = vol.Schema(merged)
         return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
 
