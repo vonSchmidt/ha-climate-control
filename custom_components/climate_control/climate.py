@@ -100,11 +100,8 @@ class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], Climate
     # ── Service call handlers ─────────────────────────────────────────────────
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        """Trigger an immediate coordinator refresh; the coordinator owns all mode decisions."""
-        _LOGGER.info(
-            "Mode request '%s' received — triggering refresh to let coordinator decide",
-            hvac_mode,
-        )
+        """Store manual override then refresh; OFF clears override and returns to schedule."""
+        self.coordinator.set_manual_override(hvac_mode)
         await self.coordinator.async_request_refresh()
 
     async def async_set_temperature(self, **kwargs: Any) -> None:

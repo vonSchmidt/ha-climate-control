@@ -249,6 +249,55 @@ class TestSolarOffset:
         assert heat_no_solar == pytest.approx(heat_high_solar)
 
 
+# ── Manual override tests ─────────────────────────────────────────────────────
+
+
+class TestManualOverride:
+    def test_override_beats_schedule_off(self) -> None:
+        coord = _make_coordinator()
+        coord.set_manual_override(HVACMode.HEAT)
+        _, _, hvac, _, reason = coord._compute(
+            ScheduleMode.OFF, PresenceState.AWAY, _solar(False), None, _TEMP_COLD
+        )
+        assert hvac == HVACMode.HEAT
+        assert "manual override" in reason.lower()
+
+    def test_override_beats_away_presence(self) -> None:
+        coord = _make_coordinator()
+        coord.set_manual_override(HVACMode.COOL)
+        _, _, hvac, _, _ = coord._compute(
+            ScheduleMode.COMFORT, PresenceState.AWAY, _solar(False), None, _TEMP_HOT
+        )
+        assert hvac == HVACMode.COOL
+
+    def test_override_uses_comfort_setpoints(self) -> None:
+        coord = _make_coordinator()
+        coord.set_manual_override(HVACMode.HEAT_COOL)
+        heat, cool, _, _, _ = coord._compute(
+            ScheduleMode.ECO, PresenceState.AWAY, _solar(False), None, _TEMP_COLD
+        )
+        assert heat == pytest.approx(DEFAULT_COMFORT_HEAT)
+        assert cool == pytest.approx(DEFAULT_COMFORT_COOL)
+
+    def test_off_clears_override_and_restores_schedule(self) -> None:
+        coord = _make_coordinator()
+        coord.set_manual_override(HVACMode.HEAT)
+        coord.set_manual_override(HVACMode.OFF)
+        _, _, hvac, _, reason = coord._compute(
+            ScheduleMode.OFF, PresenceState.HOME, _solar(False), None, _TEMP_COLD
+        )
+        assert hvac == HVACMode.OFF
+        assert "schedule" in reason.lower()
+
+    def test_override_effective_mode_is_comfort(self) -> None:
+        coord = _make_coordinator()
+        coord.set_manual_override(HVACMode.HEAT)
+        _, _, _, effective, _ = coord._compute(
+            ScheduleMode.ECO, PresenceState.AWAY, _solar(False), None, _TEMP_COLD
+        )
+        assert effective == ScheduleMode.COMFORT
+
+
 # ── Options override tests ────────────────────────────────────────────────────
 
 

@@ -67,6 +67,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self._entry = entry
+        self._override_hvac_mode: HVACMode | None = None
 
         # For editable entity fields, prefer options (set via options flow) over data.
         def _ev(key: str, default: object = None) -> object:
@@ -98,6 +99,17 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
             name=DOMAIN,
             update_interval=timedelta(minutes=interval_minutes),
         )
+
+    # ── Manual override ───────────────────────────────────────────────────────
+
+    def set_manual_override(self, hvac_mode: HVACMode) -> None:
+        """Store a manual mode; cleared when user sets OFF (returns to schedule)."""
+        if hvac_mode == HVACMode.OFF:
+            self._override_hvac_mode = None
+            _LOGGER.info("Manual override cleared — returning to schedule control")
+        else:
+            self._override_hvac_mode = hvac_mode
+            _LOGGER.info("Manual override → %s", hvac_mode.value)
 
     # ── DataUpdateCoordinator protocol ───────────────────────────────────────
 
@@ -235,6 +247,16 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         eco_heat = self._get_option(CONF_ECO_HEAT, DEFAULT_ECO_HEAT)
         eco_cool = self._get_option(CONF_ECO_COOL, DEFAULT_ECO_COOL)
         precondition = int(self._get_option(CONF_PRECONDITION_MIN, DEFAULT_PRECONDITION))
+
+        # ── Manual override: beats schedule, presence, and temperature logic ──
+        if self._override_hvac_mode is not None:
+            return (
+                comfort_heat,
+                comfort_cool,
+                self._override_hvac_mode,
+                ScheduleMode.COMFORT,
+                f"Manual override: {self._override_hvac_mode.value}",
+            )
 
         # ── Step 1: OFF is absolute — no overrides ────────────────────────────
         if schedule_mode == ScheduleMode.OFF:

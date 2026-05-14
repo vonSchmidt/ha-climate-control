@@ -48,8 +48,12 @@ class ScheduleEvaluator:
 
     def _read_entity(self, entity_id: str) -> str:
         """Return the state string of an entity, treating unavailable/missing as 'off'."""
+        if not entity_id:
+            _LOGGER.warning("Schedule entity is not configured; treating as 'off'")
+            return "off"
         state = self._hass.states.get(entity_id)
         if state is None or state.state in ("unavailable", "unknown"):
             _LOGGER.warning("Schedule entity %s is unavailable; treating as 'off'", entity_id)
             return "off"
+        _LOGGER.debug("Schedule entity %s → %s", entity_id, state.state)
         return state.state

@@ -230,12 +230,14 @@ class ClimateControlOptionsFlow(OptionsFlow):
             vol.Required(
                 CONF_ECO_COOL, default=current.get(CONF_ECO_COOL, DEFAULT_ECO_COOL)
             ): vol.Coerce(float),
-            vol.Optional(CONF_SOLAR_POWER_SENSOR): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="sensor")
-            ),
-            vol.Optional(CONF_WEATHER_ENTITY): selector.EntitySelector(
-                selector.EntitySelectorConfig(domain="weather")
-            ),
+            vol.Optional(
+                CONF_SOLAR_POWER_SENSOR,
+                description={"suggested_value": current.get(CONF_SOLAR_POWER_SENSOR)},
+            ): selector.EntitySelector(selector.EntitySelectorConfig(domain="sensor")),
+            vol.Optional(
+                CONF_WEATHER_ENTITY,
+                description={"suggested_value": current.get(CONF_WEATHER_ENTITY)},
+            ): selector.EntitySelector(selector.EntitySelectorConfig(domain="weather")),
             vol.Required(
                 CONF_UPDATE_INTERVAL,
                 default=current.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),

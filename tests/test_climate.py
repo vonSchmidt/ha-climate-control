@@ -113,10 +113,12 @@ class TestServiceHandlers:
         entity, _ = _make_entity(coordinator_data)
         await entity.async_set_temperature(temperature=25.0)
 
-    async def test_set_hvac_mode_triggers_coordinator_refresh(
+    async def test_set_hvac_mode_sets_override_and_refreshes(
         self, coordinator_data: CoordinatorData
     ) -> None:
         entity, _ = _make_entity(coordinator_data)
         entity.coordinator.async_request_refresh = AsyncMock()
+        entity.coordinator.set_manual_override = MagicMock()
         await entity.async_set_hvac_mode(HVACMode.COOL)
+        entity.coordinator.set_manual_override.assert_called_once_with(HVACMode.COOL)
         entity.coordinator.async_request_refresh.assert_called_once()
