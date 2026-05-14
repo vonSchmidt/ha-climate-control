@@ -295,7 +295,7 @@ class TestTemperatureMode:
         assert "no temperature" in reason.lower()
 
     def test_solar_offset_can_trigger_cool(self) -> None:
-        """With solar pre-cool, a room at 23.6°C should trigger COOL if offset brings threshold to 23.5°C."""
+        """Solar pre-cool lowers the cool threshold, triggering COOL sooner."""
         coord = _make_coordinator()
         # DEFAULT_COMFORT_COOL=24, SOLAR_OFFSET_LOW=0.5 → effective cool threshold=23.5
         _, _, hvac, _, _ = coord._compute(
