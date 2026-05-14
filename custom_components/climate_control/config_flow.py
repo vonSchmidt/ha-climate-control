@@ -67,7 +67,9 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 2 — schedule entities ────────────────────────────────────────────
 
-    async def async_step_schedule(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_schedule(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -92,7 +94,9 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 3 — presence & pre-conditioning ─────────────────────────────────
 
-    async def async_step_presence(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_presence(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         if user_input is not None:
             self._data.update(user_input)
             return await self.async_step_settings()
@@ -120,7 +124,9 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 4 — setpoints & solar ────────────────────────────────────────────
 
-    async def async_step_settings(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_settings(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
