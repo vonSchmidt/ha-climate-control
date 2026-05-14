@@ -139,9 +139,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
     # ── Private helpers ───────────────────────────────────────────────────────
 
-    async def _apply_to_target(
-        self, hvac_mode: HVACMode, heat_sp: float, cool_sp: float
-    ) -> None:
+    async def _apply_to_target(self, hvac_mode: HVACMode, heat_sp: float, cool_sp: float) -> None:
         """Push computed mode and setpoints to the real AC entity, only on change."""
         target: str | None = self._entry.data.get(CONF_TARGET_ENTITY)
         if not target:
@@ -177,9 +175,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
                     },
                     blocking=True,
                 )
-                _LOGGER.debug(
-                    "Set %s temperature → heat=%.1f cool=%.1f", target, heat_sp, cool_sp
-                )
+                _LOGGER.debug("Set %s temperature → heat=%.1f cool=%.1f", target, heat_sp, cool_sp)
         except Exception as exc:
             _LOGGER.error("Failed to update target entity %s: %s", target, exc)
 
