@@ -181,7 +181,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
                     {"entity_id": target, "hvac_mode": mapped_mode},
                     blocking=True,
                 )
-                _LOGGER.debug("Set %s hvac_mode → %s (mapped from %s)", target, mapped_mode, hvac_mode)
+                _LOGGER.debug("%s hvac_mode → %s (was %s)", target, mapped_mode, hvac_mode)
 
             if sp_changed and hvac_mode != HVACMode.OFF:
                 await self.hass.services.async_call(
