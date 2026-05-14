@@ -1,4 +1,5 @@
 """Schedule layer for Climate Control — reads native HA schedule.* entities."""
+
 from __future__ import annotations
 
 import logging
@@ -13,8 +14,8 @@ class ScheduleMode(Enum):
     """Operating mode derived from the two configured schedule entities."""
 
     COMFORT = "comfort"
-    ECO     = "eco"
-    OFF     = "off"
+    ECO = "eco"
+    OFF = "off"
 
 
 class ScheduleEvaluator:
@@ -37,7 +38,7 @@ class ScheduleEvaluator:
     def evaluate(self) -> ScheduleMode:
         """Return the current ScheduleMode based on the configured schedule entities."""
         comfort_state = self._read_entity(self._comfort_entity)
-        eco_state     = self._read_entity(self._eco_entity)
+        eco_state = self._read_entity(self._eco_entity)
 
         if comfort_state == "on":
             return ScheduleMode.COMFORT
@@ -49,8 +50,6 @@ class ScheduleEvaluator:
         """Return the state string of an entity, treating unavailable/missing as 'off'."""
         state = self._hass.states.get(entity_id)
         if state is None or state.state in ("unavailable", "unknown"):
-            _LOGGER.warning(
-                "Schedule entity %s is unavailable; treating as 'off'", entity_id
-            )
+            _LOGGER.warning("Schedule entity %s is unavailable; treating as 'off'", entity_id)
             return "off"
         return state.state

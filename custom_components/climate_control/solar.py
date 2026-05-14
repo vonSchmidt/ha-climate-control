@@ -1,4 +1,5 @@
 """Solar input layer for Climate Control — reads HA sensor.* and weather.* entities."""
+
 from __future__ import annotations
 
 import logging
@@ -16,10 +17,10 @@ _LOGGER = logging.getLogger(__name__)
 class SolarState:
     """Snapshot of current solar conditions derived from HA entity states."""
 
-    current_output_w: float   # 0.0 when inverter sensor absent or unavailable
-    lookahead_sunny:  bool    # True when a sunny forecast slot is within the look-ahead window
-    solar_enabled:    bool    # False when neither source is configured
-    source_note:      str     # human-readable description of active sources
+    current_output_w: float  # 0.0 when inverter sensor absent or unavailable
+    lookahead_sunny: bool  # True when a sunny forecast slot is within the look-ahead window
+    solar_enabled: bool  # False when neither source is configured
+    source_note: str  # human-readable description of active sources
 
 
 class SolarAdvisor:
@@ -51,7 +52,7 @@ class SolarAdvisor:
             )
 
         current_output_w = self._read_inverter()
-        lookahead_sunny  = self._read_forecast()
+        lookahead_sunny = self._read_forecast()
 
         sources: list[str] = []
         if self._power_sensor is not None:
@@ -76,9 +77,7 @@ class SolarAdvisor:
 
         state = self._hass.states.get(self._power_sensor)
         if state is None or state.state in ("unavailable", "unknown"):
-            _LOGGER.warning(
-                "Solar power sensor %s unavailable; assuming 0 W", self._power_sensor
-            )
+            _LOGGER.warning("Solar power sensor %s unavailable; assuming 0 W", self._power_sensor)
             return 0.0
 
         try:

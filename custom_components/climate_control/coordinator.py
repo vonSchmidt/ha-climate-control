@@ -1,4 +1,5 @@
 """DataUpdateCoordinator — schedule/presence/solar decision engine for Climate Control."""
+
 from __future__ import annotations
 
 import logging
@@ -45,14 +46,14 @@ _LOGGER = logging.getLogger(__name__)
 class CoordinatorData:
     """Snapshot of computed state produced by each coordinator refresh."""
 
-    schedule_mode:        ScheduleMode
-    presence:             PresenceState
-    solar:                SolarState
-    effective_mode:       ScheduleMode    # after presence override
-    target_setpoint_heat: float           # °C
-    target_setpoint_cool: float           # °C, after solar offset
-    hvac_mode:            HVACMode
-    reason:               str
+    schedule_mode: ScheduleMode
+    presence: PresenceState
+    solar: SolarState
+    effective_mode: ScheduleMode  # after presence override
+    target_setpoint_heat: float  # °C
+    target_setpoint_cool: float  # °C, after solar offset
+    hvac_mode: HVACMode
+    reason: str
 
 
 class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
@@ -72,7 +73,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         self._schedule = ScheduleEvaluator(
             hass,
             _ev(CONF_COMFORT_SCHEDULE),  # type: ignore[arg-type]
-            _ev(CONF_ECO_SCHEDULE),       # type: ignore[arg-type]
+            _ev(CONF_ECO_SCHEDULE),  # type: ignore[arg-type]
         )
         self._presence = PresenceEvaluator(
             hass,
@@ -80,8 +81,8 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         )
         self._solar = SolarAdvisor(
             hass,
-            _ev(CONF_SOLAR_POWER_SENSOR),    # type: ignore[arg-type]
-            _ev(CONF_WEATHER_ENTITY),         # type: ignore[arg-type]
+            _ev(CONF_SOLAR_POWER_SENSOR),  # type: ignore[arg-type]
+            _ev(CONF_WEATHER_ENTITY),  # type: ignore[arg-type]
         )
 
         interval_minutes: int = entry.options.get(
@@ -102,9 +103,9 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         """Read HA entity states and compute setpoints."""
         try:
             schedule_mode = self._schedule.evaluate()
-            presence      = self._presence.evaluate()
-            solar_state   = self._solar.evaluate()
-            minutes_away  = self._presence.minutes_since_last_seen()
+            presence = self._presence.evaluate()
+            solar_state = self._solar.evaluate()
+            minutes_away = self._presence.minutes_since_last_seen()
         except Exception as exc:
             raise UpdateFailed(f"Error reading entity states: {exc}") from exc
 
@@ -137,9 +138,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
     def _get_option(self, key: str, default: float | int) -> float:
         """Return option from options flow, falling back to data then default."""
-        return float(
-            self._entry.options.get(key, self._entry.data.get(key, default))
-        )
+        return float(self._entry.options.get(key, self._entry.data.get(key, default)))
 
     def _compute(
         self,
@@ -151,14 +150,15 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
         """Compute setpoints; return (heat, cool, hvac_mode, effective_mode, reason)."""
         comfort_heat = self._get_option(CONF_COMFORT_HEAT, DEFAULT_COMFORT_HEAT)
         comfort_cool = self._get_option(CONF_COMFORT_COOL, DEFAULT_COMFORT_COOL)
-        eco_heat     = self._get_option(CONF_ECO_HEAT, DEFAULT_ECO_HEAT)
-        eco_cool     = self._get_option(CONF_ECO_COOL, DEFAULT_ECO_COOL)
+        eco_heat = self._get_option(CONF_ECO_HEAT, DEFAULT_ECO_HEAT)
+        eco_cool = self._get_option(CONF_ECO_COOL, DEFAULT_ECO_COOL)
         precondition = int(self._get_option(CONF_PRECONDITION_MIN, DEFAULT_PRECONDITION))
 
         # ── Step 1: OFF is absolute — no overrides ────────────────────────────
         if schedule_mode == ScheduleMode.OFF:
             return (
-                comfort_heat, comfort_cool,
+                comfort_heat,
+                comfort_cool,
                 HVACMode.OFF,
                 ScheduleMode.OFF,
                 "Schedule: off",
@@ -166,11 +166,7 @@ class ClimateControlCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
         # ── Step 2: presence override ─────────────────────────────────────────
         away = presence in (PresenceState.AWAY, PresenceState.UNKNOWN)
-        approaching_return = (
-            away
-            and minutes_away is not None
-            and minutes_away <= precondition
-        )
+        approaching_return = away and minutes_away is not None and minutes_away <= precondition
 
         if schedule_mode == ScheduleMode.COMFORT and away:
             effective_mode = ScheduleMode.ECO

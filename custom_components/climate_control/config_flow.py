@@ -1,4 +1,5 @@
 """Config flow for Climate Control integration."""
+
 from __future__ import annotations
 
 import logging
@@ -46,9 +47,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 1 — target devices ───────────────────────────────────────────────
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         if user_input is not None:
             self._data.update(user_input)
             return await self.async_step_schedule()
@@ -68,9 +67,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 2 — schedule entities ────────────────────────────────────────────
 
-    async def async_step_schedule(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_schedule(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -95,9 +92,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 3 — presence & pre-conditioning ─────────────────────────────────
 
-    async def async_step_presence(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_presence(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         if user_input is not None:
             self._data.update(user_input)
             return await self.async_step_settings()
@@ -125,9 +120,7 @@ class ClimateControlConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ── Step 4 — setpoints & solar ────────────────────────────────────────────
 
-    async def async_step_settings(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_settings(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -174,9 +167,7 @@ class ClimateControlOptionsFlow(OptionsFlow):
     def __init__(self, config_entry: ConfigEntry) -> None:
         self._entry = config_entry
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -263,8 +254,8 @@ def _validate_setpoints(data: dict[str, Any]) -> dict[str, str]:
 
     comfort_heat = float(data.get(CONF_COMFORT_HEAT, DEFAULT_COMFORT_HEAT))
     comfort_cool = float(data.get(CONF_COMFORT_COOL, DEFAULT_COMFORT_COOL))
-    eco_heat     = float(data.get(CONF_ECO_HEAT, DEFAULT_ECO_HEAT))
-    eco_cool     = float(data.get(CONF_ECO_COOL, DEFAULT_ECO_COOL))
+    eco_heat = float(data.get(CONF_ECO_HEAT, DEFAULT_ECO_HEAT))
+    eco_cool = float(data.get(CONF_ECO_COOL, DEFAULT_ECO_COOL))
 
     if comfort_heat >= comfort_cool:
         errors["base"] = "comfort_heat_gte_cool"

@@ -1,4 +1,5 @@
 """Climate entity for Climate Control integration."""
+
 from __future__ import annotations
 
 import logging
@@ -41,8 +42,7 @@ class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], Climate
     _attr_name = "Climate Control"
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT, HVACMode.COOL, HVACMode.HEAT_COOL]
     _attr_supported_features = (
-        ClimateEntityFeature.TARGET_TEMPERATURE
-        | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+        ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
     )
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
@@ -92,12 +92,12 @@ class ClimateControlEntity(CoordinatorEntity[ClimateControlCoordinator], Climate
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         return {
-            "schedule_mode":         self._data.schedule_mode.value,
-            "effective_mode":        self._data.effective_mode.value,
-            "presence":              self._data.presence.value,
-            "solar_output_w":        self._data.solar.current_output_w,
+            "schedule_mode": self._data.schedule_mode.value,
+            "effective_mode": self._data.effective_mode.value,
+            "presence": self._data.presence.value,
+            "solar_output_w": self._data.solar.current_output_w,
             "solar_lookahead_sunny": self._data.solar.lookahead_sunny,
-            "reason":                self._data.reason,
+            "reason": self._data.reason,
         }
 
     # ── Service call handlers ─────────────────────────────────────────────────

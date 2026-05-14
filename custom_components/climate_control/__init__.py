@@ -1,4 +1,5 @@
 """Climate Control integration setup."""
+
 from __future__ import annotations
 
 import logging
@@ -22,9 +23,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ClimateControlConfigEntr
 
     entry.runtime_data = coordinator
 
-    await hass.config_entries.async_forward_entry_setups(
-        entry, [Platform(p) for p in PLATFORMS]
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, [Platform(p) for p in PLATFORMS])
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     return True
@@ -32,9 +31,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ClimateControlConfigEntr
 
 async def async_unload_entry(hass: HomeAssistant, entry: ClimateControlConfigEntry) -> bool:
     """Unload a config entry."""
-    return await hass.config_entries.async_unload_platforms(
-        entry, [Platform(p) for p in PLATFORMS]
-    )
+    return await hass.config_entries.async_unload_platforms(entry, [Platform(p) for p in PLATFORMS])
 
 
 async def async_reload_entry(hass: HomeAssistant, entry: ClimateControlConfigEntry) -> None:
