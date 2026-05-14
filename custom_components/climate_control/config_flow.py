@@ -1,5 +1,6 @@
 """Config flow for Climate Control integration."""
 
+
 from __future__ import annotations
 
 import logging
@@ -254,6 +255,8 @@ def _validate_setpoints(data: dict[str, Any]) -> dict[str, str]:
 
     comfort_heat = float(data.get(CONF_COMFORT_HEAT, DEFAULT_COMFORT_HEAT))
     comfort_cool = float(data.get(CONF_COMFORT_COOL, DEFAULT_COMFORT_COOL))
+    eco_heat = float(data.get(CONF_ECO_HEAT, DEFAULT_ECO_HEAT))
+    eco_cool = float(data.get(CONF_ECO_COOL, DEFAULT_ECO_COOL))
     eco_heat = float(data.get(CONF_ECO_HEAT, DEFAULT_ECO_HEAT))
     eco_cool = float(data.get(CONF_ECO_COOL, DEFAULT_ECO_COOL))
 
